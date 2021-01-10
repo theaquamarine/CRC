@@ -135,12 +135,9 @@ Function get-crc32
 
     $stream.Close()
 
-    echo ""
-    echo ""
-    echo "Algorithm : CRC32"
-    echo "Hash      : $hash"
-    echo "Path      : $path"
-    echo ""
-    echo ""
-    echo ""
+    $hashinfo = [Microsoft.PowerShell.Commands.FileHashInfo]::new()
+    $hashinfo.Algorithm = 'CRC32'
+    $hashinfo.Hash = $hash
+    $hashinfo.Path = $path
+    $hashinfo
 }
