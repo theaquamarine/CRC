@@ -119,7 +119,7 @@ public sealed class Crc32 : HashAlgorithm
 Function get-crc32
 {
     Param (
-        [Parameter(Mandatory=$true)][String]$path
+        [Parameter(Mandatory=$true)][String[]]$Path
     )
 
     $ErrorActionPreference = "Stop"
