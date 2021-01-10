@@ -123,21 +123,23 @@ Function get-crc32
     )
 
     $ErrorActionPreference = "Stop"
-    $path = (Resolve-Path $path).Path
+    $paths = (Resolve-Path $path).Path
     $crc32 = New-Object Crc32 
-    $stream = New-Object IO.FileStream($path, [System.IO.FileMode]::Open)
-    $hash = [String]::Empty
+    foreach ($path in $paths) {
+        $stream = New-Object IO.FileStream($path, [System.IO.FileMode]::Open)
+        $hash = [String]::Empty
 
-    foreach ($byte in $crc32.ComputeHash($stream))
-    {
-        $hash += $byte.toString('x2').toUpper()
+        foreach ($byte in $crc32.ComputeHash($stream))
+        {
+            $hash += $byte.toString('x2').toUpper()
+        }
+
+        $stream.Close()
+
+        $hashinfo = [Microsoft.PowerShell.Commands.FileHashInfo]::new()
+        $hashinfo.Algorithm = 'CRC32'
+        $hashinfo.Hash = $hash
+        $hashinfo.Path = $path
+        $hashinfo
     }
-
-    $stream.Close()
-
-    $hashinfo = [Microsoft.PowerShell.Commands.FileHashInfo]::new()
-    $hashinfo.Algorithm = 'CRC32'
-    $hashinfo.Hash = $hash
-    $hashinfo.Path = $path
-    $hashinfo
 }
