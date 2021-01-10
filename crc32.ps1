@@ -123,6 +123,7 @@ Function get-crc32
     )
 
     $ErrorActionPreference = "Stop"
+    $path = (Resolve-Path $path).Path
     $crc32 = New-Object Crc32 
     $stream = New-Object IO.FileStream($path, [System.IO.FileMode]::Open)
     $hash = [String]::Empty
