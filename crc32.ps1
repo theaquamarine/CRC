@@ -118,28 +118,54 @@ public sealed class Crc32 : HashAlgorithm
 
 Function get-crc32
 {
+    [CmdletBinding(DefaultParameterSetName = 'PathParameterSet')]
     Param (
-        [Parameter(Mandatory=$true)][String[]]$Path
+        [Parameter(
+            Mandatory=$true, 
+            ParameterSetName = 'PathParameterSet',
+            Position=0, 
+            ValueFromPipeline=$true, 
+            ValueFromPipelineByPropertyName=$true
+        )]
+        [String[]]$Path,
+
+        [Parameter(
+            Mandatory=$true, 
+            ParameterSetName = 'LiteralPathParameterSet',
+            Position=0, 
+            ValueFromPipelineByPropertyName=$true
+        )]
+        [Alias('PSPath', 'LP')]
+        [String[]]$LiteralPath
     )
 
-    $ErrorActionPreference = "Stop"
-    $paths = (Resolve-Path $path).Path
-    $crc32 = New-Object Crc32 
-    foreach ($path in $paths) {
-        $stream = New-Object IO.FileStream($path, [System.IO.FileMode]::Open)
-        $hash = [String]::Empty
+    begin {
+        $ErrorActionPreference = "Stop"
+        $crc32 = New-Object Crc32 
+    }
 
-        foreach ($byte in $crc32.ComputeHash($stream))
-        {
-            $hash += $byte.toString('x2').toUpper()
+    process {
+        $paths = switch ($PSCmdlet.ParameterSetName) {
+            'PathParameterSet' {Convert-Path -Path $Path; break}
+            'LiteralPathParameterSet' {Convert-Path -LiteralPath $LiteralPath; break}
         }
 
-        $stream.Close()
+        foreach ($path in $paths) {
+            $stream = New-Object IO.FileStream($path, [System.IO.FileMode]::Open)
+            $hash = [String]::Empty
 
-        $hashinfo = [Microsoft.PowerShell.Commands.FileHashInfo]::new()
-        $hashinfo.Algorithm = 'CRC32'
-        $hashinfo.Hash = $hash
-        $hashinfo.Path = $path
-        $hashinfo
+            foreach ($byte in $crc32.ComputeHash($stream))
+            {
+                $hash += $byte.toString('x2').toUpper()
+            }
+
+            $stream.Close()
+
+            $hashinfo = [Microsoft.PowerShell.Commands.FileHashInfo]::new()
+            $hashinfo.Algorithm = 'CRC32'
+            $hashinfo.Hash = $hash
+            $hashinfo.Path = $path
+            $hashinfo
+        }
     }
 }
