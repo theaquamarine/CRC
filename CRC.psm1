@@ -161,10 +161,19 @@ Function get-crc32
 
             $stream.Close()
 
-            $hashinfo = [Microsoft.PowerShell.Commands.FileHashInfo]::new()
-            $hashinfo.Algorithm = 'CRC32'
-            $hashinfo.Hash = $hash
-            $hashinfo.Path = $path
+            if ($PSVersionTable.PSVersion.Major -ge 6) {
+                # Not in PS5
+                $hashinfo = [Microsoft.PowerShell.Commands.FileHashInfo]::new()
+                $hashinfo.Algorithm = 'CRC32'
+                $hashinfo.Hash = $hash
+                $hashinfo.Path = $path
+            } else {
+                $hashinfo = [PSCustomObject]@{
+                    Algorithm = 'CRC32'
+                    Hash = $hash
+                    Path = $path
+                }
+            }
             $hashinfo
         }
     }
